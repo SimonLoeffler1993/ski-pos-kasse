@@ -4,9 +4,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 
 export default function Rechts() {
     const kategorien = [
-        { id: "ski", name: "Ski", akzent: "data-active:after:bg-sky-500", hintergrund: "bg-sky-100" },
-        { id: "schuhe", name: "Schuhe", akzent: "data-active:after:bg-amber-500", hintergrund: "bg-amber-100" },
-        { id: "zubehoer", name: "Zubehör", akzent: "data-active:after:bg-emerald-500", hintergrund: "bg-emerald-100" },
+        { id: "Auftrag", name: "Auftrag", akzent: "data-active:after:bg-sky-500", hintergrund: "bg-sky-100" },
+        { id: "Verleih", name: "Verleih", akzent: "data-active:after:bg-amber-500", hintergrund: "bg-amber-100" },
+        { id: "Handware", name: "Handware", akzent: "data-active:after:bg-emerald-500", hintergrund: "bg-emerald-100" },
     ] as const;
     return (
 
@@ -30,7 +30,7 @@ export default function Rechts() {
                     value={kategorie.id}
                     className={`flex-1 min-h-0 overflow-y-auto ${kategorie.hintergrund}`}
                 >
-                    <ArtikelListe kategorie={kategorie.id} />
+                    <ArtikelListe kategorie={kategorie.name} />
                 </TabsContent>
             ))}
         </Tabs>
