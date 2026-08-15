@@ -1,14 +1,18 @@
 // artikel/artikelkarte.tsx
 import type { KassenArtikel } from "../../types/artikel";
 import { Card } from "../ui/card";
+import { useWarenkorbStore } from "../../stores/useWarenkorbStore";
 
 type ArtikelKarteProps = {
     artikel: KassenArtikel;
 };
 
 export default function ArtikelKarte({ artikel }: ArtikelKarteProps) {
+    const addItem = useWarenkorbStore((state) => state.addItem);
+
     return (
         <Card
+            onClick={() => addItem(artikel)}
             className="p-4 cursor-pointer bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-md hover:border-primary transition-all select-none"
         >
             <p className="font-medium">{artikel.artikelname}</p>
