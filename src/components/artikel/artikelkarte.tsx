@@ -9,7 +9,7 @@ type ArtikelKarteProps = {
 
 export default function ArtikelKarte({ artikel }: ArtikelKarteProps) {
     const addItem = useWarenkorbStore((state) => state.addItem);
-
+    // TODO #1 : Aufklappen um die einzelenen Details zu sehen
     return (
         <Card
             onClick={() => addItem(artikel)}

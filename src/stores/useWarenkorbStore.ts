@@ -25,3 +25,8 @@ export const useWarenkorbStore = create<WarenkorbStore>()(
         }),
     }))
 );
+
+export const useWarenkorbTotalPreis = () =>
+    useWarenkorbStore((state) =>
+        Object.values(state.items).reduce((summe, item) => summe + item.gesamtpreis, 0)
+    );

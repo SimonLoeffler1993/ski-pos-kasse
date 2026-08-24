@@ -13,7 +13,7 @@ export async function getArtikels(kategorie: KassenKategorie) {
     });
 
     if (!response.ok) {
-        throw new Error(`Error fetching artikel with ID ${kategorie}: ${response.statusText}`);
+        throw new Error(`Fehler beim Abrufen der Artikel für Kategorie ${kategorie}: ${response.statusText}`);
     }
 
     const data = await response.json();

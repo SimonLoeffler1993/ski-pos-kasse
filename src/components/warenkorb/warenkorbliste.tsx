@@ -3,6 +3,7 @@ import { useWarenkorbStore } from '../../stores/useWarenkorbStore';
 export default function WarenkorbListe() {
     const items = useWarenkorbStore((state) => state.items);
     const removeItem = useWarenkorbStore((state) => state.removeItem);
+    const clearCart = useWarenkorbStore((state) => state.clearCart);
     const itemList = Object.values(items);
 
     if (itemList.length === 0) {
@@ -15,8 +16,21 @@ export default function WarenkorbListe() {
         );
     }
 
+    function handleAlleEntfernen() {
+        clearCart();
+    }
+
     return (
         <div className="flex min-h-[200px] flex-col gap-2">
+            <div className="flex justify-end">
+                <button
+                    onClick={handleAlleEntfernen}
+                    className="rounded-md border border-slate-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                >
+                    Alle entfernen
+                </button>
+            </div>
+
             {itemList.map((item) => (
                 <div
                     key={item.id}
