@@ -6,5 +6,5 @@ export const kassenArtikelsOptions = (kategorie: KassenKategorie) => queryOption
     queryKey: ["kassenArtikels", kategorie],
     queryFn: () => getArtikels(kategorie),
     gcTime: 1000 * 60 * 60,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 1,
 })

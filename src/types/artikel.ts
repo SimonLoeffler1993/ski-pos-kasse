@@ -14,6 +14,8 @@ export const KassenArtikelSchema = z.object({
   artikelname: z.string(),
   gesamtpreis: z.number(),
   artikel: z.array(KasseEinzelArtikelSchema),
+  service: z.boolean().optional().default(false),
+  verleih: z.boolean().optional().default(false),
 });
 
 export type KassenArtikel = z.infer<typeof KassenArtikelSchema>;

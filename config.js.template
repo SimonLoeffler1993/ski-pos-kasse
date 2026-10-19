@@ -1,0 +1,4 @@
+window.__ENV__ = {
+  VITE_APP_NAME: "${VITE_APP_NAME}",
+  VITE_API_URL: "${VITE_API_URL}"
+};

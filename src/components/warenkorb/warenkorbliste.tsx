@@ -20,6 +20,7 @@ export default function WarenkorbListe() {
         clearCart();
     }
 
+    // TODO wen Saisonverleih und Service gleiche ID haben können nicht beide im Warenkorb sein
     return (
         <div className="flex min-h-[200px] flex-col gap-2">
             <div className="flex justify-end">

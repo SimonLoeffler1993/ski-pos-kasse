@@ -1,20 +1,24 @@
 import { useState } from "react";
-import Rueckgeld from "../bezahlen/rueckgeld";
-import Zahlart, { type Zahlungsart } from "../bezahlen/zahlart";
-import { useWarenkorbTotalPreis } from "../../stores/useWarenkorbStore";
 import { Button } from "../ui/button";
-import { Dialog, DialogPortal, DialogTrigger, DialogOverlay, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "../ui/dialog";
+import { Dialog, DialogPortal, DialogTrigger, DialogOverlay, DialogContent} from "../ui/dialog";
+import BezahlSchritt from "../bezahlen/bezahlenstep";
+import type { BezahlenResponse } from "../../types/bezahlen";
+import QuittungsSchritt from "../bezahlen/quittungsstep";
 
 export default function BezahlButton() {
-    const [zahlungsart, setZahlungsart] = useState<Zahlungsart>("bar");
-    const totalPreis = useWarenkorbTotalPreis();
+    const [open, setOpen] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [schritt, setSchritt] = useState<"bezahlen" | "quittung">("bezahlen");
+    const [bezahlData, setBezahlData] = useState<BezahlenResponse | null>(null);
 
-    function handleBezahlungBestaetigen() {
-        // TODO: Bon erstellen / Auftrag abschließen, zahlungsart + ggf. gegebenNum übergeben
+    function handleOpenChange(nextOpen: boolean) {
+        if (busy) return; // Dialog öffnen/verlassen verhindern, solange Bezahlt wird
+        setOpen(nextOpen);
     }
+    
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger render={
                 <Button className="h-12 w-full rounded-xl bg-emerald-500 px-4 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-600">
                     Bezahlen
@@ -23,36 +27,13 @@ export default function BezahlButton() {
             <DialogPortal>
                 <DialogOverlay />
                 <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Bezahlen</DialogTitle>
-                    </DialogHeader>
-
-                    <div className="flex flex-col gap-5">
-                        <div className="flex items-baseline justify-between rounded-xl bg-slate-900 px-5 py-4">
-                            <span className="text-sm font-medium text-slate-300">Gesamtbetrag</span>
-                            <span className="text-3xl font-bold tabular-nums text-white">
-                                {totalPreis.toFixed(2)} €
-                            </span>
-                        </div>
-
-                        <Zahlart zahlungsart={zahlungsart} onZahlungsartChange={setZahlungsart} />
-
-                        {zahlungsart === "bar" && <Rueckgeld />}
-                    </div>
-
-                    <DialogFooter className="flex-col gap-2 sm:flex-col">
-                        <Button
-                            onClick={handleBezahlungBestaetigen}
-                            className="h-12 w-full rounded-xl bg-emerald-500 px-4 text-base font-semibold text-white shadow-sm transition hover:bg-emerald-600"
-                        >
-                            Zahlung bestätigen
-                        </Button>
-                        <DialogClose render={
-                            <Button className="h-12 w-full rounded-xl bg-slate-200 px-4 text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-300">
-                                Abbrechen
-                            </Button>
-                        } />
-                    </DialogFooter>
+                    {schritt === "bezahlen" ? ( <BezahlSchritt onBezahlt={(data) => {
+                        setBezahlData(data);
+                        setSchritt("quittung");
+                    }} OnBusyChange={setBusy} />
+                    ) : (
+                    <QuittungsSchritt bezahlData={bezahlData!} onFertig={() => setOpen(false)} />
+                    )}
                 </DialogContent>
             </DialogPortal>
         </Dialog>

@@ -1,5 +1,5 @@
 import { API_URL } from "../config";
-import type { KassenArtikelListe, KassenKategorie  } from "../types/artikel";
+import type { KassenArtikelListe, KassenKategorie } from "../types/artikel";
 import { KassenArtikelSchema } from "../types/artikel";
 
 
