@@ -4,15 +4,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 
 export default function Rechts() {
     const kategorien = [
-        { id: "ski", name: "Ski", akzent: "data-active:after:bg-sky-500", hintergrund: "bg-sky-100" },
-        { id: "schuhe", name: "Schuhe", akzent: "data-active:after:bg-amber-500", hintergrund: "bg-amber-100" },
-        { id: "zubehoer", name: "Zubehör", akzent: "data-active:after:bg-emerald-500", hintergrund: "bg-emerald-100" },
+        { id: "Auftrag", name: "Auftrag", akzent: "data-active:after:bg-sky-500", hintergrund: "bg-sky-100" },
+        { id: "Verleih", name: "Verleih", akzent: "data-active:after:bg-amber-500", hintergrund: "bg-amber-100" },
+        { id: "Handware", name: "Handware", akzent: "data-active:after:bg-emerald-500", hintergrund: "bg-emerald-100" },
     ] as const;
     return (
 
-        <Tabs defaultValue={kategorien[0].id} className="h-full flex flex-col">
+        <Tabs defaultValue={kategorien[0].id} className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white">
 
-            <TabsList variant="line" className="h-14 gap-6 px-1">
+            <TabsList variant="line" className="h-14 shrink-0 gap-6 px-1">
                 {kategorien.map((kategorie) => (
                     <TabsTrigger
                         key={kategorie.id}
@@ -28,9 +28,9 @@ export default function Rechts() {
                 <TabsContent
                     key={kategorie.id}
                     value={kategorie.id}
-                    className={`flex-1 min-h-0 overflow-y-auto ${kategorie.hintergrund}`}
+                    className={`min-h-0 flex-1 overflow-y-auto ${kategorie.hintergrund}`}
                 >
-                    <ArtikelListe kategorie={kategorie.id} />
+                    <ArtikelListe kategorie={kategorie.name} />
                 </TabsContent>
             ))}
         </Tabs>

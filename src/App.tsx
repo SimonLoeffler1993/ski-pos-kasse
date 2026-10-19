@@ -5,17 +5,17 @@ import Rechts from './components/rechts'
 
 function App() {
     return (
-        <div className="flex flex-col h-screen">
-            <div className="bg-green-500 text-white p-4">
+        <div className="flex h-screen flex-col overflow-hidden bg-slate-100">
+            <div className="bg-green-500 text-white p-4 shadow-sm">
                 <Kopf />
             </div>
-            <div className="grid grid-cols-3 gap-4 flex-1 min-h-0">
-                <div className="text-white p-4 col-span-1 flex flex-col h-full">
-                    <div className="flex-1 overflow-y-auto">
-                        <Links />
-                    </div>
+
+            <div className="grid flex-1 min-h-0 grid-cols-[360px_minmax(0,1fr)] gap-4 p-4">
+                <div className="min-h-0 overflow-hidden">
+                    <Links />
                 </div>
-                <div className="text-white p-4 col-span-2">
+
+                <div className="min-h-0 overflow-hidden">
                     <Rechts />
                 </div>
             </div>
