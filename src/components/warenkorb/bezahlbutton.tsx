@@ -13,6 +13,11 @@ export default function BezahlButton() {
 
     function handleOpenChange(nextOpen: boolean) {
         if (busy) return; // Dialog öffnen/verlassen verhindern, solange Bezahlt wird
+        if (nextOpen) {
+            // Bei jedem Öffnen wieder mit dem Bezahlschritt beginnen
+            setSchritt("bezahlen");
+            setBezahlData(null);
+        }
         setOpen(nextOpen);
     }
     
@@ -31,8 +36,8 @@ export default function BezahlButton() {
                         setBezahlData(data);
                         setSchritt("quittung");
                     }} OnBusyChange={setBusy} />
-                    ) : (
-                    <QuittungsSchritt bezahlData={bezahlData!} onFertig={() => setOpen(false)} />
+                    ) : bezahlData && (
+                    <QuittungsSchritt bezahlData={bezahlData} onFertig={() => setOpen(false)} />
                     )}
                 </DialogContent>
             </DialogPortal>

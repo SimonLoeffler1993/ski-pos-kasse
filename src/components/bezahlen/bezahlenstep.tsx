@@ -29,9 +29,6 @@ export default function BezahlSchritt({ onBezahlt, OnBusyChange }: BezahlSchritt
 
     function handleBezahlungBestaetigen() {
         // TODO: Bon erstellen / Auftrag abschließen, zahlungsart + ggf. gegebenNum übergeben
-        console.log("Bezahlung bestätigt", zahlungsart);
-        console.log("Artikel in Warenkorb:", artikels);
-
         mutate({
             artikels: artikelList,
             ueberweisung: zahlungsart === "ueberweisung",
@@ -39,7 +36,6 @@ export default function BezahlSchritt({ onBezahlt, OnBusyChange }: BezahlSchritt
             bar: zahlungsart === "bar"
         }, {
             onSuccess: (data) => {
-                console.log("Bezahlung erfolgreich:", data);
                 clearWarenkorb();
                 onBezahlt(data);
                 reset();
