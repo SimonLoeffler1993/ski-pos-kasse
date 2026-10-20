@@ -11,7 +11,9 @@ export async function bezahlen(bezahlenData: Bezahlen): Promise<BezahlenResponse
     });
 
     if (!response.ok) {
-        throw new Error(`Fehler beim Bezahlen: ${response.statusText}`);
+        // Fehlermeldung vom Backend anzeigen, z.B. "Auftrag ist bereits bezahlt"
+        const fehler = await response.json().catch(() => null);
+        throw new Error(`Fehler beim Bezahlen: ${fehler?.detail ?? response.statusText}`);
     }
 
     const data = await response.json();

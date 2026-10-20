@@ -1,4 +1,4 @@
-import { useWarenkorbStore } from '../../stores/useWarenkorbStore';
+import { useWarenkorbStore, warenkorbKey } from '../../stores/useWarenkorbStore';
 
 export default function WarenkorbListe() {
     const items = useWarenkorbStore((state) => state.items);
@@ -34,7 +34,7 @@ export default function WarenkorbListe() {
 
             {itemList.map((item) => (
                 <div
-                    key={item.id}
+                    key={warenkorbKey(item)}
                     className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-sm"
                 >
                     <div className="flex flex-col">
@@ -46,7 +46,7 @@ export default function WarenkorbListe() {
                             {item.gesamtpreis.toFixed(2)} €
                         </span>
                         <button
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(warenkorbKey(item))}
                             className="rounded-md border border-slate-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
                         >
                             Entfernen
