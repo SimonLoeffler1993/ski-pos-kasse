@@ -8,7 +8,7 @@ export default function WarenkorbListe() {
 
     if (itemList.length === 0) {
         return (
-            <div className="flex min-h-[200px] flex-col gap-2">
+            <div className="flex flex-col gap-2">
                 <div className="rounded-lg border border-dashed border-slate-200 bg-white p-3 text-sm text-slate-500">
                     Warenkorb leer
                 </div>
@@ -22,8 +22,8 @@ export default function WarenkorbListe() {
 
     // TODO wen Saisonverleih und Service gleiche ID haben können nicht beide im Warenkorb sein
     return (
-        <div className="flex min-h-[200px] flex-col gap-2">
-            <div className="flex justify-end">
+        <div className="flex flex-col gap-2">
+            <div className="sticky -top-2 z-10 -mx-2 -mt-2 flex justify-end bg-slate-50 px-2 pt-2 pb-1">
                 <button
                     onClick={handleAlleEntfernen}
                     className="rounded-md border border-slate-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"

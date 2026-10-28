@@ -5,7 +5,7 @@ import Rechts from './components/rechts'
 
 function App() {
     return (
-        <div className="flex h-screen flex-col overflow-hidden bg-slate-100">
+        <div className="flex h-dvh flex-col overflow-hidden bg-slate-100">
             <div className="bg-green-500 text-white p-4 shadow-sm">
                 <Kopf />
             </div>
