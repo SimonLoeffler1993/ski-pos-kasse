@@ -117,6 +117,13 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Die Seite selbst scrollt nie, nur Warenkorb und Artikelliste */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
 }

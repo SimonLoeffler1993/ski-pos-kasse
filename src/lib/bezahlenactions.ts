@@ -1,5 +1,5 @@
 import { API_URL } from "../config";
-import { BezahlenResponseSchema, type Bezahlen, type BezahlenResponse } from "../types/bezahlen";
+import { BezahlenResponseSchema, QuittungMailErgebnisSchema, type Bezahlen, type BezahlenResponse, type QuittungMailErgebnis } from "../types/bezahlen";
 
 export async function bezahlen(bezahlenData: Bezahlen): Promise<BezahlenResponse> {
     const response = await fetch(`${API_URL}/api/v1/kasse/bezahlen`, {
@@ -24,4 +24,23 @@ export async function bezahlen(bezahlenData: Bezahlen): Promise<BezahlenResponse
     }
 
     return parsedData.data;
+}
+
+export async function sendeQuittungMail({ quittungId, emails }: { quittungId: number; emails: string[] }): Promise<QuittungMailErgebnis> {
+    const response = await fetch(`${API_URL}/api/v1/quittungen/quittung/${quittungId}/mail`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ emails }),
+    });
+
+    if (!response.ok) {
+        const fehler = await response.json().catch(() => null);
+        // Bei ungültiger Adresse liefert FastAPI eine Liste von Fehlern
+        const detail = typeof fehler?.detail === "string" ? fehler.detail : response.status === 422 ? "Ungültige E-Mail Adresse" : response.statusText;
+        throw new Error(`Fehler beim Senden der Quittung: ${detail}`);
+    }
+
+    return QuittungMailErgebnisSchema.parse(await response.json());
 }
