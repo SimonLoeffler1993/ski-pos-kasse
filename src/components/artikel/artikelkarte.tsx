@@ -18,14 +18,14 @@ export default function ArtikelKarte({ artikel }: ArtikelKarteProps) {
             className="relative p-4 cursor-pointer bg-white/60 backdrop-blur-sm hover:bg-white/80 hover:shadow-md hover:border-primary transition-all select-none"
         >
             {artikel.handware && imWarenkorb > 0 && (
-                <span className="absolute right-3 top-3 flex min-w-7 items-center justify-center rounded-full bg-emerald-500 px-2 py-0.5 text-sm font-semibold text-white">
+                <span className="absolute bottom-3 right-3 flex min-w-7 items-center justify-center rounded-full bg-emerald-500 px-2 py-0.5 text-sm font-semibold text-white">
                     {imWarenkorb}×
                 </span>
             )}
             {artikel.handware ? (
                 <>
-                    <p className="pr-10 text-lg font-bold [overflow-wrap:anywhere]">{artikel.artikelname}</p>
-                    {artikel.kundenname && <p className="font-medium text-slate-600">{artikel.kundenname}</p>}
+                    {/* Kategorie steht als Überschrift über der Gruppe */}
+                    <p className="text-lg font-bold [overflow-wrap:break-word]">{artikel.artikelname}</p>
                 </>
             ) : (
                 <>
