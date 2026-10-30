@@ -12,7 +12,7 @@ type WarenkorbStore = {
     items: WarenkorbItems;
     addItem: (artikel: KassenArtikel) => void;
     removeItem: (key: string) => void;
-    // Menge eines Handwarenartikels, unter 1 wird er entfernt
+    // Menge eines Handwarenartikels, mindestens 1 (Entfernen über removeItem)
     setMenge: (key: string, menge: number) => void;
     clearCart: () => void;
 };
@@ -31,11 +31,7 @@ export const useWarenkorbStore = create<WarenkorbStore>()(
         }),
         setMenge: (key, menge) => set((state) => {
             if (!state.items[key]) return;
-            if (menge < 1) {
-                delete state.items[key];
-            } else {
-                state.items[key].menge = menge;
-            }
+            state.items[key].menge = Math.max(1, menge);
         }),
         removeItem: (key) => set((state) => {
             delete state.items[key];

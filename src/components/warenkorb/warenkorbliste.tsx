@@ -62,8 +62,9 @@ export default function WarenkorbListe() {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setMenge(key, item.menge - 1)}
+                                    disabled={item.menge <= 1}
                                     aria-label="Menge verringern"
-                                    className="flex size-9 items-center justify-center rounded-lg border border-slate-200 text-lg font-semibold text-slate-700 hover:bg-slate-50"
+                                    className="flex size-9 items-center justify-center rounded-lg border border-slate-200 text-lg font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     −
                                 </button>
