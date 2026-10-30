@@ -16,6 +16,11 @@ export const KassenArtikelSchema = z.object({
   artikel: z.array(KasseEinzelArtikelSchema),
   service: z.boolean().optional().default(false),
   verleih: z.boolean().optional().default(false),
+  handware: z.boolean().optional().default(false),
+  // Verkaufte Menge, nur bei Handware änderbar
+  menge: z.number().int().min(1).optional().default(1),
+  // Anzahl des Handwarenartikels, nur als Hinweis
+  bestand: z.number().int().nullish(),
 });
 
 export type KassenArtikel = z.infer<typeof KassenArtikelSchema>;
