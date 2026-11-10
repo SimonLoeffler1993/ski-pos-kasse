@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { KassenArtikel } from '../types/artikel';
@@ -46,3 +47,9 @@ export const useWarenkorbTotalPreis = () =>
     useWarenkorbStore((state) =>
         Object.values(state.items).reduce((summe, item) => summe + item.gesamtpreis * item.menge, 0)
     );
+
+// Schlüssel aller Artikel im Warenkorb, z.B. um sie in der Artikelliste auszublenden
+export const useWarenkorbSchluessel = () => {
+    const items = useWarenkorbStore((state) => state.items);
+    return useMemo(() => new Set(Object.keys(items)), [items]);
+};

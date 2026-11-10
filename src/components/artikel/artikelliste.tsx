@@ -3,9 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { kassenArtikelsOptions } from "../../hooks/useAuftragArtikelOptions";
 import ArtikelKarte from "./artikelkarte";
 import type { KassenArtikel, KassenKategorie } from "../../types/artikel";
+import { sichtbareArtikel } from "../../lib/kundensuche";
+import { useWarenkorbSchluessel } from "../../stores/useWarenkorbStore";
 
 type ArtikelgridProps = {
     kategorie: KassenKategorie;
+    // Suche nach Kunde oder Nummer, leer = alle
+    suche?: string;
 };
 
 type Gruppe = { name: string; artikel: KassenArtikel[] };
@@ -35,9 +39,10 @@ function Raster({ artikel }: { artikel: KassenArtikel[] }) {
     );
 }
 
-export default function ArtikelListe({ kategorie }: ArtikelgridProps) {
+export default function ArtikelListe({ kategorie, suche = "" }: ArtikelgridProps) {
 
-    const { data, isPending, isError } = useQuery(kassenArtikelsOptions(kategorie as KassenKategorie));
+    const { data, isPending, isError } = useQuery(kassenArtikelsOptions(kategorie));
+    const imWarenkorb = useWarenkorbSchluessel();
 
     if (isPending) {
         return <h2>Lade Artikel...</h2>;
@@ -52,9 +57,18 @@ export default function ArtikelListe({ kategorie }: ArtikelgridProps) {
     }
 
     if (kategorie !== "Handware") {
+        // Ohne Treffer der Suche und ohne Posten, die schon im Warenkorb liegen
+        const sichtbar = sichtbareArtikel(data, suche, imWarenkorb);
+        if (sichtbar.length === 0) {
+            return (
+                <h2 className="p-4">
+                    {suche.trim() ? `Keine Treffer für „${suche.trim()}“` : "Alle offenen Posten liegen im Warenkorb."}
+                </h2>
+            );
+        }
         return (
             <div className="p-4">
-                <Raster artikel={data} />
+                <Raster artikel={sichtbar} />
             </div>
         );
     }
