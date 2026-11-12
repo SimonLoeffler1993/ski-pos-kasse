@@ -8,6 +8,8 @@ import { useQuittungMail } from "../../hooks/useQuittungMail";
 
 type QuittungsSchrittProps = {
     bezahlData: BezahlenResponse;
+    // Bezahlter Betrag aus dem Warenkorb
+    gesamtbetrag: number;
     onFertig: () => void;
     // onBusyChange: (isBusy: boolean) => void;
 };
@@ -16,7 +18,7 @@ const emailGueltig = (email: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.
 
 const grosserButton = "h-12 w-full rounded-xl px-4 text-base font-semibold shadow-sm transition";
 
-export default function QuittungsSchritt({ bezahlData, onFertig}: QuittungsSchrittProps) {
+export default function QuittungsSchritt({ bezahlData, gesamtbetrag, onFertig }: QuittungsSchrittProps) {
     const vorschlaege = bezahlData.emails;
     const [mailOffen, setMailOffen] = useState(false);
     // Bei genau einem Vorschlag ist die Adresse schon eingetragen
@@ -50,11 +52,19 @@ export default function QuittungsSchritt({ bezahlData, onFertig}: QuittungsSchri
                 </DialogDescription>
             </DialogHeader>
 
-            <div className="flex items-baseline justify-between rounded-xl bg-slate-900 px-5 py-4">
-                <span className="text-sm font-medium text-slate-300">Quittung Nr.</span>
-                <span className="text-2xl font-bold tabular-nums text-white">
-                    {bezahlData.quittung_nummer ?? bezahlData.quittung_id}
-                </span>
+            <div className="flex flex-col gap-3 rounded-xl bg-slate-900 px-5 py-4">
+                <div className="flex items-baseline justify-between">
+                    <span className="text-sm font-medium text-slate-300">Quittung Nr.</span>
+                    <span className="text-2xl font-bold tabular-nums text-white">
+                        {bezahlData.quittung_nummer ?? bezahlData.quittung_id}
+                    </span>
+                </div>
+                <div className="flex items-baseline justify-between border-t border-slate-700 pt-3">
+                    <span className="text-sm font-medium text-slate-300">Gesamtbetrag</span>
+                    <span className="text-3xl font-bold tabular-nums text-white">
+                        {gesamtbetrag.toFixed(2)} €
+                    </span>
+                </div>
             </div>
 
             {ergebnis ? (

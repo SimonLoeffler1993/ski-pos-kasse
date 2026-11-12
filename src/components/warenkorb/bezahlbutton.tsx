@@ -10,6 +10,7 @@ export default function BezahlButton() {
     const [busy, setBusy] = useState(false);
     const [schritt, setSchritt] = useState<"bezahlen" | "quittung">("bezahlen");
     const [bezahlData, setBezahlData] = useState<BezahlenResponse | null>(null);
+    const [gesamtbetrag, setGesamtbetrag] = useState(0);
 
     function handleOpenChange(nextOpen: boolean) {
         if (busy) return; // Dialog öffnen/verlassen verhindern, solange Bezahlt wird
@@ -17,6 +18,7 @@ export default function BezahlButton() {
             // Bei jedem Öffnen wieder mit dem Bezahlschritt beginnen
             setSchritt("bezahlen");
             setBezahlData(null);
+            setGesamtbetrag(0);
         }
         setOpen(nextOpen);
     }
@@ -32,12 +34,13 @@ export default function BezahlButton() {
             <DialogPortal>
                 <DialogOverlay />
                 <DialogContent className="max-w-md">
-                    {schritt === "bezahlen" ? ( <BezahlSchritt onBezahlt={(data) => {
+                    {schritt === "bezahlen" ? ( <BezahlSchritt onBezahlt={(data, betrag) => {
                         setBezahlData(data);
+                        setGesamtbetrag(betrag);
                         setSchritt("quittung");
                     }} OnBusyChange={setBusy} />
                     ) : bezahlData && (
-                    <QuittungsSchritt bezahlData={bezahlData} onFertig={() => setOpen(false)} />
+                    <QuittungsSchritt bezahlData={bezahlData} gesamtbetrag={gesamtbetrag} onFertig={() => setOpen(false)} />
                     )}
                 </DialogContent>
             </DialogPortal>

@@ -11,7 +11,7 @@ import type { BezahlenResponse } from "../../types/bezahlen";
 
 
 type BezahlSchrittProps = {
-    onBezahlt: (data: BezahlenResponse) => void;
+    onBezahlt: (data: BezahlenResponse, gesamtbetrag: number) => void;
     OnBusyChange: (isBusy: boolean) => void;
 };
 
@@ -37,7 +37,8 @@ export default function BezahlSchritt({ onBezahlt, OnBusyChange }: BezahlSchritt
         }, {
             onSuccess: (data) => {
                 clearWarenkorb();
-                onBezahlt(data);
+                // Betrag vor dem Leeren des Warenkorbs, für die Anzeige im Quittungsschritt
+                onBezahlt(data, totalPreis);
                 reset();
             },
             onError: (error) => {
