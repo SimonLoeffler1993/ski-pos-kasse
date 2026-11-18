@@ -5,7 +5,9 @@ export const BezahlenSchema = z.object({
     artikels: z.array(KassenArtikelSchema),
     ueberweisung: z.boolean().default(false),
     karte: z.boolean().default(false),
-    bar: z.boolean().default(false)
+    bar: z.boolean().default(false),
+    // Bezahlte Aufträge und Verleihe gleich auf abgeholt setzen
+    abgeholt: z.boolean().default(false)
 });
 
 export type Bezahlen = z.infer<typeof BezahlenSchema>;
