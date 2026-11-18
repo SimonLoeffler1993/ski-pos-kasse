@@ -1,5 +1,6 @@
 import { DialogHeader, DialogTitle, DialogFooter, DialogClose } from "../ui/dialog";
 import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
 import { useEffect, useState } from "react";
 
 import type { Zahlungsart } from "./zahlart";
@@ -21,6 +22,10 @@ export default function BezahlSchritt({ onBezahlt, OnBusyChange }: BezahlSchritt
     const artikels = useWarenkorbStore((state) => state.items);
     const clearWarenkorb = useWarenkorbStore((state) => state.clearCart);
     const artikelList = Object.values(artikels);
+    // Nur Aufträge und Verleihe können abgeholt werden. Der Schritt wird bei jedem Öffnen neu eingehängt,
+    // der Haken ist also jedes Mal wieder gesetzt
+    const abholbar = artikelList.some((artikel) => artikel.service || artikel.verleih);
+    const [abgeholt, setAbgeholt] = useState(true);
     const { mutate, isPending, isError, error, reset } = useBezahlen();
 
     useEffect(() => {
@@ -33,7 +38,8 @@ export default function BezahlSchritt({ onBezahlt, OnBusyChange }: BezahlSchritt
             artikels: artikelList,
             ueberweisung: zahlungsart === "ueberweisung",
             karte: zahlungsart === "ec",
-            bar: zahlungsart === "bar"
+            bar: zahlungsart === "bar",
+            abgeholt: abholbar && abgeholt
         }, {
             onSuccess: (data) => {
                 clearWarenkorb();
@@ -71,6 +77,18 @@ export default function BezahlSchritt({ onBezahlt, OnBusyChange }: BezahlSchritt
                 <Zahlart zahlungsart={zahlungsart} onZahlungsartChange={setZahlungsart} />
 
                 {zahlungsart === "bar" && <Rueckgeld />}
+
+                {abholbar && (
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <Checkbox
+                            checked={abgeholt}
+                            onCheckedChange={(wert) => setAbgeholt(wert === true)}
+                            disabled={isPending}
+                            className="size-6 rounded-md bg-white data-checked:border-emerald-500 data-checked:bg-emerald-500 data-checked:text-white [&_svg]:size-4"
+                        />
+                        <span className="text-base font-medium text-slate-700">Gleich als abgeholt markieren</span>
+                    </label>
+                )}
             </div>
 
             <DialogFooter className="flex-col gap-2 sm:flex-col">
