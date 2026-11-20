@@ -2,9 +2,11 @@ import './App.css'
 import Kopf from './components/kopf'
 import Links from './components/links'
 import Rechts from './components/rechts'
+import AnmeldeSperre from './components/anmeldung/AnmeldeSperre'
 
 function App() {
     return (
+        <AnmeldeSperre>
         <div className="flex h-dvh flex-col overflow-hidden bg-slate-100">
             <div className="bg-green-500 text-white p-4 shadow-sm">
                 <Kopf />
@@ -20,6 +22,7 @@ function App() {
                 </div>
             </div>
         </div>
+        </AnmeldeSperre>
     )
 }
 
