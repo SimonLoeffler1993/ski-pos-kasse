@@ -9,6 +9,9 @@ export const AuthStatusSchema = z.object({
     anmeldung_erzwungen: z.boolean(),
     pin_erlaubt: z.boolean(),
     oidc: z.object({ aktiv: z.boolean(), anbieter: z.string(), button_text: z.string() }),
+    // Was ohne Anmeldung erlaubt ist (Gruppe "Ohne Anmeldung", im Übergang alles)
+    ohne_anmeldung: z.object({ lesen: z.boolean(), rechte: z.array(z.string()) })
+        .default({ lesen: true, rechte: ["*"] }),
 });
 export type AuthStatus = z.infer<typeof AuthStatusSchema>;
 
@@ -123,9 +126,8 @@ export async function passwortAendern(alt: string | null, neu: string): Promise<
     useAnmeldungStore.getState().benutzerAktualisieren(await response.json());
 }
 
-/** Ticket für einen Link ohne Header (PDF). Ohne Bediener null. */
+/** Ticket für einen Link ohne Header (PDF), auch ohne Anmeldung (Kasse über die Gruppe "Ohne Anmeldung"). */
 export async function holeTicket(pfad: string): Promise<string | null> {
-    if (!useAnmeldungStore.getState().bedienerToken) return null;
     const response = await apiFetch("/auth/ticket", { method: "POST", body: JSON.stringify({ pfad }) });
     if (!response.ok) return null;
     return (await response.json())?.ticket ?? null;

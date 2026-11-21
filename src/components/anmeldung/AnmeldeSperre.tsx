@@ -92,13 +92,16 @@ export default function AnmeldeSperre({ children }: { children: ReactNode }) {
     if (bedienerToken) return <>{children}</>;
     if (geraetToken) return <BedienerAuswahl status={status} />;
     if (isPending) return <AnmeldeRahmen titel="Verbinde…">{null}</AnmeldeRahmen>;
-    if (status?.anmeldung_erzwungen || oidcFehler || anmeldenGewuenscht) {
+    // Kasse ohne Anmeldung: im Übergang bzw. wenn die Gruppe "Ohne Anmeldung" kassieren darf
+    const gastRechte = status?.ohne_anmeldung.rechte ?? [];
+    const ohneAnmeldungErlaubt = !status?.anmeldung_erzwungen || gastRechte.includes("*") || gastRechte.includes("kasse.kassieren");
+    if (!ohneAnmeldungErlaubt || oidcFehler || anmeldenGewuenscht) {
         return (
             <AnmeldeRahmen titel="Anmelden" untertitel="Einmal anmelden, danach bleibt die Kasse angemeldet">
                 <AnmeldeFormular status={status} geraetAngemeldet={false} fehler={oidcFehler} />
             </AnmeldeRahmen>
         );
     }
-    // Übergang: ohne Anmeldung nutzbar
+    // Ohne Anmeldung nutzbar (Übergang bzw. Kassenrecht der Gruppe "Ohne Anmeldung")
     return <>{children}</>;
 }
