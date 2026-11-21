@@ -8,6 +8,7 @@ import AnmeldeFormular from "./AnmeldeFormular";
 import AnmeldeRahmen from "./AnmeldeRahmen";
 import BedienerAuswahl from "./BedienerAuswahl";
 import PasswortAendern from "./PasswortAendern";
+import KeineBerechtigung from "./KeineBerechtigung";
 
 const AKTIVITAET = ["pointerdown", "keydown", "touchstart", "wheel"] as const;
 
@@ -85,6 +86,9 @@ export default function AnmeldeSperre({ children }: { children: ReactNode }) {
     }, [bedienerToken, timeoutMinuten]);
 
     if (bedienerToken && benutzer?.passwort_aendern) return <PasswortAendern />;
+    if (bedienerToken && benutzer && !benutzer.rechte?.includes("*") && !benutzer.rechte?.includes("kasse.kassieren")) {
+        return <KeineBerechtigung name={benutzer.anzeigename} />;
+    }
     if (bedienerToken) return <>{children}</>;
     if (geraetToken) return <BedienerAuswahl status={status} />;
     if (isPending) return <AnmeldeRahmen titel="Verbinde…">{null}</AnmeldeRahmen>;

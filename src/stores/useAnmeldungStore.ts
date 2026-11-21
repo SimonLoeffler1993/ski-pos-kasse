@@ -7,7 +7,8 @@ import { persist } from 'zustand/middleware';
 export type KassenBenutzer = {
     id: number;
     anzeigename: string;
-    rolle: 'admin' | 'mitarbeiter';
+    // Rechte aus Gruppen -> Rollen, "*" = alle
+    rechte: string[];
     passwort_aendern: boolean;
     hat_passwort: boolean;
 };
