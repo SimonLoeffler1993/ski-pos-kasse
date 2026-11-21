@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { API_URL } from "../config";
-import { useAnmeldungStore, type AnmeldeAntwort, type KassenBenutzer } from "../stores/useAnmeldungStore";
+import { useAnmeldungStore, type AnmeldeAntwort, type KassenBenutzer, type KassenGeraet } from "../stores/useAnmeldungStore";
 import { apiFetch, fehlerAus } from "./api";
 
 export const AuthStatusSchema = z.object({
@@ -28,8 +28,13 @@ const TEXTE: Record<string, string> = {
     oidc_aus: "Die Anmeldung über den Anbieter ist ausgeschaltet.",
     mandant_nicht_erlaubt: "Konten dieser Organisation sind nicht zugelassen.",
     anbieter_nicht_erreichbar: "Der Anmelde-Anbieter ist nicht erreichbar.",
-    passwort_falsch: "Das aktuelle Passwort ist falsch.",
+    passwort_falsch: "Das Passwort ist falsch.",
     oidc: "Die Anmeldung über den Anbieter ist fehlgeschlagen.",
+    kein_recht_geraet: "Du darfst keine Geräte anmelden (Recht „Gerät anmelden“ fehlt).",
+    bereits_dauerhaft: "Diese Kasse ist schon angemeldet.",
+    oidc_bestaetigen: "Dein Konto hat kein Passwort: bitte über den Anbieter bestätigen.",
+    oidc_anderer_benutzer: "Beim Anbieter wurde ein anderes Konto angemeldet. Die Kasse wurde nicht angemeldet.",
+    oidc_nicht_frisch: "Der Anbieter hat nicht neu nach dem Passwort gefragt. Bitte erneut versuchen.",
 };
 
 export function fehlerText(code: string | null | undefined, gesperrtBis?: string | null): string {
@@ -57,17 +62,18 @@ export async function holeStatus(): Promise<AuthStatus> {
     return AuthStatusSchema.parse(await response.json());
 }
 
-export async function anmelden(benutzername: string, passwort: string, geraetName?: string): Promise<KassenBenutzer> {
-    const { geraetToken, geraetName: bisherigerName } = useAnmeldungStore.getState();
+export async function anmelden(benutzername: string, passwort: string): Promise<KassenBenutzer> {
+    const { geraetToken } = useAnmeldungStore.getState();
+    // Name der Gerätesitzung vergibt die API ("Kasse (Name)"), geändert wird er bei "Kasse anmelden"
     const response = await apiFetch("/auth/anmelden", {
         method: "POST",
-        body: JSON.stringify({ benutzername, passwort, geraet_name: geraetName || null, geraet_art: "kasse" }),
+        body: JSON.stringify({ benutzername, passwort, geraet_name: null, geraet_art: "kasse" }),
     }, { nurGeraet: true });
     if (response.status === 401 && geraetToken) {
         const detail = await response.clone().json().then((d) => d?.detail).catch(() => null);
         if (detail === "anmeldung_noetig") {
-            // Gerätesitzung ungültig (z.B. im Center abgemeldet): als neues Gerät anmelden
-            return anmelden(benutzername, passwort, bisherigerName ?? "Kasse");
+            // Gerätesitzung ungültig (z.B. im Center abgemeldet; apiFetch hat sie vergessen): neu anmelden
+            return anmelden(benutzername, passwort);
         }
     }
     return anmeldeAntwort(response);
@@ -84,10 +90,10 @@ export async function pinAnmelden(benutzerId: number, pin: string): Promise<Kass
     return anmeldeAntwort(response);
 }
 
-export async function oidcEinloesen(code: string, geraetName?: string): Promise<KassenBenutzer> {
+export async function oidcEinloesen(code: string): Promise<KassenBenutzer> {
     const response = await apiFetch("/auth/oidc/einloesen", {
         method: "POST",
-        body: JSON.stringify({ code, geraet_name: geraetName || null, geraet_art: "kasse" }),
+        body: JSON.stringify({ code, geraet_name: null, geraet_art: "kasse" }),
     }, { nurGeraet: true });
     return anmeldeAntwort(response);
 }
@@ -98,9 +104,45 @@ export function oidcStartUrl(): string {
     return `${API_URL}/api/v1/auth/oidc/start?ziel=${encodeURIComponent(ziel)}`;
 }
 
+/** Bediener abmelden. Eine persönliche Anmeldung endet dabei ganz (dann wieder das Anmeldeformular). */
 export async function bedienerAbmelden(): Promise<void> {
-    await apiFetch("/auth/bediener/abmelden", { method: "POST" }).catch(() => null);
-    useAnmeldungStore.getState().bedienerVergessen();
+    const response = await apiFetch("/auth/bediener/abmelden", { method: "POST" }).catch(() => null);
+    const daten = response?.ok ? await response.json().catch(() => null) : null;
+    const { dauerhaft, bedienerVergessen, allesVergessen } = useAnmeldungStore.getState();
+    if (daten?.geraet_abgemeldet || !dauerhaft) allesVergessen();
+    else bedienerVergessen();
+}
+
+async function geraetAntwort(response: Response, standard: string): Promise<KassenGeraet> {
+    if (!response.ok) {
+        const fehler = await fehlerAus(response, standard);
+        throw new Error(fehlerText(fehler.detail, response.headers.get("X-Gesperrt-Bis")) || fehler.message);
+    }
+    const geraet = (await response.json()) as KassenGeraet;
+    useAnmeldungStore.getState().geraetAktualisieren(geraet);
+    return geraet;
+}
+
+/** "Kasse anmelden": macht diese Kasse dauerhaft angemeldet (Recht geraete.anmelden, Passwort erneut). */
+export async function kasseDauerhaftAnmelden(passwort: string, name: string): Promise<KassenGeraet> {
+    const response = await apiFetch("/auth/geraet/anmelden", {
+        method: "POST",
+        body: JSON.stringify({ passwort, name: name.trim() || null }),
+    });
+    return geraetAntwort(response, "Die Kasse konnte nicht angemeldet werden.");
+}
+
+/** Wie kasseDauerhaftAnmelden, bestätigt über den OIDC-Anbieter; zurück mit ?geraet_angemeldet=1 bzw. ?fehler=. */
+export async function kasseOidcUrl(name: string): Promise<string> {
+    const response = await apiFetch("/auth/geraet/oidc", {
+        method: "POST",
+        body: JSON.stringify({ ziel: `${window.location.origin}/`, name: name.trim() || null }),
+    });
+    if (!response.ok) {
+        const fehler = await fehlerAus(response, "Bestätigung nicht möglich.");
+        throw new Error(fehlerText(fehler.detail) || fehler.message);
+    }
+    return (await response.json()).url;
 }
 
 export async function geraetAbmelden(): Promise<void> {
@@ -114,6 +156,7 @@ export async function pruefeSitzung(): Promise<boolean> {
     if (!response.ok) return false;
     const daten = await response.json();
     if (daten?.benutzer) useAnmeldungStore.getState().benutzerAktualisieren(daten.benutzer);
+    if (daten?.geraet) useAnmeldungStore.getState().geraetAktualisieren(daten.geraet);
     return Boolean(daten?.benutzer);
 }
 

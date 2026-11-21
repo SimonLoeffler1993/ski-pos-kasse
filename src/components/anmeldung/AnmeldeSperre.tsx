@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { bedienerAbmelden, fehlerText, holeStatus, oidcEinloesen, pruefeSitzung } from "../../lib/anmeldungactions";
-import { gemerkterOidcGeraetName } from "../../lib/geraetname";
 import { useAnmeldungStore } from "../../stores/useAnmeldungStore";
 import AnmeldeFormular from "./AnmeldeFormular";
 import AnmeldeRahmen from "./AnmeldeRahmen";
@@ -23,7 +22,10 @@ function useAnmeldenGewuenscht(): boolean {
     return gewuenscht;
 }
 
-/** Rückkehr von der OIDC-Anmeldung: ?code= einlösen bzw. ?fehler= anzeigen, danach die URL säubern. */
+/**
+ * Rückkehr von der OIDC-Anmeldung: ?code= einlösen bzw. ?fehler= anzeigen, danach die URL säubern.
+ * ?geraet_angemeldet=1 kommt von "Kasse anmelden" mit OIDC: Sitzung neu lesen (jetzt dauerhaft).
+ */
 function useOidcRueckkehr(): string | null {
     // ?fehler= gleich beim ersten Rendern lesen
     const [fehler, setFehler] = useState<string | null>(() => {
@@ -36,10 +38,12 @@ function useOidcRueckkehr(): string | null {
         erledigt.current = true;
         const parameter = new URLSearchParams(window.location.search);
         const code = parameter.get("code");
-        if (!code && !parameter.get("fehler")) return;
+        const geraetAngemeldet = parameter.get("geraet_angemeldet");
+        if (!code && !parameter.get("fehler") && !geraetAngemeldet) return;
         window.history.replaceState(null, "", window.location.pathname);
+        if (geraetAngemeldet) void pruefeSitzung();
         if (code) {
-            oidcEinloesen(code, gemerkterOidcGeraetName())
+            oidcEinloesen(code)
                 .catch((err: unknown) => setFehler(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen."));
         }
     }, []);
@@ -48,10 +52,11 @@ function useOidcRueckkehr(): string | null {
 
 /**
  * Zeigt die Kasse nur mit Anmeldung bzw., solange die Anmeldung nicht erzwungen ist, auch ohne.
- * Ein angemeldetes Gerät verlangt immer einen Bediener. Nach Inaktivität zurück zur Bedienerauswahl.
+ * Eine dauerhaft angemeldete Kasse verlangt immer einen Bediener (Bedienerauswahl); eine persönliche Anmeldung
+ * endet mit dem Abmelden bzw. nach Inaktivität, danach kommt wieder das Anmeldeformular.
  */
 export default function AnmeldeSperre({ children }: { children: ReactNode }) {
-    const { geraetToken, bedienerToken, benutzer, timeoutMinuten } = useAnmeldungStore();
+    const { geraetToken, bedienerToken, benutzer, timeoutMinuten, dauerhaft, allesVergessen } = useAnmeldungStore();
     const queryClient = useQueryClient();
     const oidcFehler = useOidcRueckkehr();
     const anmeldenGewuenscht = useAnmeldenGewuenscht();
@@ -70,7 +75,12 @@ export default function AnmeldeSperre({ children }: { children: ReactNode }) {
         if (bedienerToken && window.location.hash === "#anmelden") window.history.replaceState(null, "", window.location.pathname);
     }, [bedienerToken]);
 
-    // Inaktivität: nach der eingestellten Zeit zurück zur Bedienerauswahl (0 = nie)
+    // Persönliche Anmeldung ohne Bediener gibt es nicht: Reste vergessen
+    useEffect(() => {
+        if (geraetToken && !bedienerToken && !dauerhaft) allesVergessen();
+    }, [geraetToken, bedienerToken, dauerhaft, allesVergessen]);
+
+    // Inaktivität: nach der eingestellten Zeit abmelden (0 = nie)
     useEffect(() => {
         if (!bedienerToken || !timeoutMinuten) return;
         let letzte = Date.now();
@@ -90,15 +100,15 @@ export default function AnmeldeSperre({ children }: { children: ReactNode }) {
         return <KeineBerechtigung name={benutzer.anzeigename} />;
     }
     if (bedienerToken) return <>{children}</>;
-    if (geraetToken) return <BedienerAuswahl status={status} />;
+    if (geraetToken && dauerhaft) return <BedienerAuswahl status={status} />;
     if (isPending) return <AnmeldeRahmen titel="Verbinde…">{null}</AnmeldeRahmen>;
     // Kasse ohne Anmeldung: im Übergang bzw. wenn die Gruppe "Ohne Anmeldung" kassieren darf
     const gastRechte = status?.ohne_anmeldung.rechte ?? [];
     const ohneAnmeldungErlaubt = !status?.anmeldung_erzwungen || gastRechte.includes("*") || gastRechte.includes("kasse.kassieren");
     if (!ohneAnmeldungErlaubt || oidcFehler || anmeldenGewuenscht) {
         return (
-            <AnmeldeRahmen titel="Anmelden" untertitel="Einmal anmelden, danach bleibt die Kasse angemeldet">
-                <AnmeldeFormular status={status} geraetAngemeldet={false} fehler={oidcFehler} />
+            <AnmeldeRahmen titel="Anmelden" untertitel="Mit Benutzername und Passwort anmelden">
+                <AnmeldeFormular status={status} fehler={oidcFehler} />
             </AnmeldeRahmen>
         );
     }

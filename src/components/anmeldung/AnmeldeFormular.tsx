@@ -2,20 +2,17 @@ import { useState } from "react";
 import { KeyRound, LogIn } from "lucide-react";
 
 import { anmelden, oidcStartUrl, type AuthStatus } from "../../lib/anmeldungactions";
-import { GERAET_NAME, gemerkterGeraetName as gemerkt } from "../../lib/geraetname";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
 
 /** Benutzername + Passwort (Standard), dazu der OIDC-Button, wenn eingerichtet. */
-export default function AnmeldeFormular({ status, geraetAngemeldet, fehler: anfangsFehler }: {
+export default function AnmeldeFormular({ status, fehler: anfangsFehler }: {
     status: AuthStatus | undefined;
-    geraetAngemeldet: boolean;
     fehler?: string | null;
 }) {
     const [benutzername, setBenutzername] = useState("");
     const [passwort, setPasswort] = useState("");
-    const [geraetName, setGeraetName] = useState(gemerkt);
     const [fehler, setFehler] = useState<string | null>(anfangsFehler ?? null);
     const [laeuft, setLaeuft] = useState(false);
 
@@ -24,10 +21,7 @@ export default function AnmeldeFormular({ status, geraetAngemeldet, fehler: anfa
         setLaeuft(true);
         setFehler(null);
         try {
-            await anmelden(benutzername.trim(), passwort, geraetAngemeldet ? undefined : geraetName);
-            try {
-                if (!geraetAngemeldet) localStorage.setItem(GERAET_NAME, geraetName);
-            } catch { /* ohne Speicher wird der Name nur nicht vorgeschlagen */ }
+            await anmelden(benutzername.trim(), passwort);
         } catch (err) {
             setFehler(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen.");
             setPasswort("");
@@ -37,9 +31,6 @@ export default function AnmeldeFormular({ status, geraetAngemeldet, fehler: anfa
     };
 
     const oidc = () => {
-        try {
-            if (!geraetAngemeldet) sessionStorage.setItem(GERAET_NAME, geraetName);
-        } catch { /* Name fehlt dann nur */ }
         window.location.href = oidcStartUrl();
     };
 
@@ -57,12 +48,6 @@ export default function AnmeldeFormular({ status, geraetAngemeldet, fehler: anfa
                     <Input className="h-11" type="password" autoComplete="current-password" value={passwort}
                         onChange={(e) => setPasswort(e.target.value)} required />
                 </label>
-                {!geraetAngemeldet && (
-                    <label className="block space-y-1 text-sm font-medium">
-                        <span>Name dieser Kasse</span>
-                        <Input className="h-11" value={geraetName} maxLength={100} onChange={(e) => setGeraetName(e.target.value)} />
-                    </label>
-                )}
                 <Button type="submit" className="h-12 w-full text-base" disabled={laeuft || !benutzername || !passwort}>
                     <LogIn /> {laeuft ? "Anmelden…" : "Anmelden"}
                 </Button>

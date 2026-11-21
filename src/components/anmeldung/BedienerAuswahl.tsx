@@ -53,7 +53,7 @@ export default function BedienerAuswahl({ status }: { status: AuthStatus | undef
                     ))}
                 </div>
             )}
-            <AnmeldeFormular status={status} geraetAngemeldet />
+            <AnmeldeFormular status={status} />
             <div className="flex justify-end border-t pt-3">
                 <Button variant="ghost" size="sm" onClick={() => window.confirm("Diese Kasse abmelden?") && geraetAbmelden()}>
                     <LogOut /> Kasse abmelden
