@@ -1,16 +1,11 @@
-import { API_URL } from "../config";
+import { apiFetch } from "./api";
 import type { KassenArtikelListe, KassenKategorie } from "../types/artikel";
 import { KassenArtikelSchema } from "../types/artikel";
 
 
 
 export async function getArtikels(kategorie: KassenKategorie) {
-    const response = await fetch(`${API_URL}/api/v1/kasse/artikels?artikelkategorie=${kategorie}`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    });
+    const response = await apiFetch(`/kasse/artikels?artikelkategorie=${kategorie}`);
 
     if (!response.ok) {
         throw new Error(`Fehler beim Abrufen der Artikel für Kategorie ${kategorie}: ${response.statusText}`);

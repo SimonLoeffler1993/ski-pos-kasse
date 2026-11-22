@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { API_URL } from "../../config";
 import { useQuittungMail } from "../../hooks/useQuittungMail";
+import { holeTicket } from "../../lib/anmeldungactions";
 
 type QuittungsSchrittProps = {
     bezahlData: BezahlenResponse;
@@ -25,9 +26,19 @@ export default function QuittungsSchritt({ bezahlData, gesamtbetrag, onFertig }:
     const [email, setEmail] = useState(vorschlaege.length === 1 ? vorschlaege[0] : "");
     const { mutate, data: ergebnis, isPending, isError, error } = useQuittungMail();
 
-    function handleQuittung() {
-        const quittungUrl = `${API_URL}/api/v1/quittungen/quittung/${bezahlData.quittung_id}/pdf`
-        window.open(quittungUrl, "_blank", "noopener,noreferrer");
+    async function handleQuittung() {
+        // Synchron im Klick öffnen, sonst blockiert der Popup-Blocker; die Adresse kommt nach dem Ticket
+        const fenster = window.open("about:blank", "_blank");
+        const pfad = `/quittungen/quittung/${bezahlData.quittung_id}/pdf`;
+        // Ein Link kann keinen Header senden: Anmeldung über ein Kurzzeit-Ticket in der URL
+        const ticket = await holeTicket(pfad);
+        const quittungUrl = `${API_URL}/api/v1${pfad}${ticket ? `?ticket=${encodeURIComponent(ticket)}` : ""}`;
+        if (fenster) {
+            fenster.opener = null;
+            fenster.location.href = quittungUrl;
+        } else {
+            window.open(quittungUrl, "_blank", "noopener,noreferrer");
+        }
         onFertig()
     }
 

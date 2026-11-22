@@ -1,12 +1,9 @@
-import { API_URL } from "../config";
+import { apiFetch } from "./api";
 import { BezahlenResponseSchema, QuittungMailErgebnisSchema, type Bezahlen, type BezahlenResponse, type QuittungMailErgebnis } from "../types/bezahlen";
 
 export async function bezahlen(bezahlenData: Bezahlen): Promise<BezahlenResponse> {
-    const response = await fetch(`${API_URL}/api/v1/kasse/bezahlen`, {
+    const response = await apiFetch("/kasse/bezahlen", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify(bezahlenData),
     });
 
@@ -27,11 +24,8 @@ export async function bezahlen(bezahlenData: Bezahlen): Promise<BezahlenResponse
 }
 
 export async function sendeQuittungMail({ quittungId, emails }: { quittungId: number; emails: string[] }): Promise<QuittungMailErgebnis> {
-    const response = await fetch(`${API_URL}/api/v1/quittungen/quittung/${quittungId}/mail`, {
+    const response = await apiFetch(`/quittungen/quittung/${quittungId}/mail`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
         body: JSON.stringify({ emails }),
     });
 
